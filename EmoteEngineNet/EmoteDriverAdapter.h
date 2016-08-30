@@ -25,6 +25,7 @@ namespace EmoteEngineNet {
 			virtual uint32_t CountPlayingTimelines() abstract = 0;
 			virtual uint32_t CountVariableFrameAt(uint32_t variableIndex) abstract = 0;
 			virtual uint32_t CountVariables() abstract = 0;
+			virtual int Contains(String^ label, float x, float y) abstract = 0;
 			virtual void FadeInTimeline(String^ label, float frameCount, float easing) abstract = 0;
 			virtual void FadeOutTimeline(String^ label, float frameCount, float easing) abstract = 0;
 			virtual float GetBustScale() abstract = 0;
@@ -121,6 +122,8 @@ namespace EmoteEngineNet {
 		{
 		public:
 			virtual EmoteDeviceBase^ EmoteCreate(IDirect3DDevice9* sD3DDevice) abstract = 0;
+		internal:
+			EmoteFilterTextureFunction EmoteFilterTexture;
 		};
 	}
 }

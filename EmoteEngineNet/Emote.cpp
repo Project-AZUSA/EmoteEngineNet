@@ -26,26 +26,27 @@ namespace EmoteEngineNet {
 	}
 	Emote::~Emote()
 	{
-		Dictionary<String^, EmotePlayer^>::ValueCollection::Enumerator^ enumerator = EmotePlayers->Values->GetEnumerator();
-		while (enumerator->MoveNext())
+		for each (auto player in EmotePlayers->Values)
 		{
-			EmotePlayer^ current = enumerator->Current;
 			try
 			{
-				if (current != nullptr)
+				if (player != nullptr)
 				{
-					current = nullptr;
+					//delete player->NativePlayer;
+					delete player;
+					player = nullptr;
 				}
-				continue;
 			}
-			catch (Exception^)
+			catch (const std::exception&)
 			{
-				continue;
+			}
+			catch (System::Exception^)
+			{
 			}
 		}
-		EmoteDevice^ emoteDevice = device;
-		if (emoteDevice != nullptr)
+		if (device != nullptr)
 		{
+			delete device;
 			device = nullptr;
 		}
 
@@ -56,7 +57,10 @@ namespace EmoteEngineNet {
 		//	driver->FreeLibrary();
 
 		if (driver != nullptr)
+		{
+			delete driver;
 			driver = nullptr;
+		}
 	}
 #pragma endregion Construction/Destruction
 
@@ -109,13 +113,13 @@ namespace EmoteEngineNet {
 			sScreenWidth = Math::Abs(tagRECT.right - tagRECT.left);
 			sScreenHeight = Math::Abs(tagRECT.bottom - tagRECT.top);
 		}
-		
+
 		HINSTANCE__* ptr = LoadLibraryW((LPCWSTR)(L"d3d9.dll"));
-		g_pfnCreate9Ex = (pfnCreate9Ex) GetProcAddress(ptr, (LPCSTR)("Direct3DCreate9Ex"));
+		g_pfnCreate9Ex = (pfnCreate9Ex)GetProcAddress(ptr, (LPCSTR)("Direct3DCreate9Ex"));
 		useD3DEx = (g_pfnCreate9Ex != 0);
 		FreeLibrary(ptr);
 		useD3DEx = false;
-		
+
 		ZeroMemory(&sD3Dpp, sizeof(sD3Dpp));
 		sD3Dpp.BackBufferWidth = sScreenWidth;
 		sD3Dpp.BackBufferHeight = sScreenHeight;
@@ -127,7 +131,7 @@ namespace EmoteEngineNet {
 		if (useD3DEx)
 		{
 			pin_ptr<IDirect3DDevice9Ex*> p1 = &sD3DDeviceEx;
-			pin_ptr<IDirect3DDevice9*> p2  = &sD3DDevice;
+			pin_ptr<IDirect3DDevice9*> p2 = &sD3DDevice;
 			InitializeD3DEx(sHwnd, sD3Dpp, p1, p2, true);
 		}
 		else
@@ -359,7 +363,7 @@ namespace EmoteEngineNet {
 		d3DPRESENT_PARAMETERS_.Windowed = true;
 		d3DPRESENT_PARAMETERS_.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		d3DPRESENT_PARAMETERS_.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-		
+
 		sD3DDevice->Reset(&d3DPRESENT_PARAMETERS_);
 	}
 
@@ -516,43 +520,39 @@ namespace EmoteEngineNet {
 	}
 	void Emote::DeletePlayer(EmotePlayer^ player)
 	{
-		if (player != nullptr)
+		if (player == nullptr)
 		{
-			Lock lock(EmotePlayers);
-			if (EmotePlayers->ContainsValue(player))
+			return;
+		}
+		Lock lock(EmotePlayers);
+		if (EmotePlayers->ContainsValue(player))
+		{
+			List<String^>^ toBeDeleted = gcnew List<String^>();
+			for each (auto pair in EmotePlayers)
 			{
-				List<String^>^ list = gcnew List<String^>();
-				Dictionary<String^, EmotePlayer^>::Enumerator^ enumerator = EmotePlayers->GetEnumerator();
-				if (enumerator->MoveNext())
+				if (pair.Value == player)
 				{
-					do
-					{
-						KeyValuePair<String^, EmotePlayer^>^ current = enumerator->Current;
-						if (current->Value == player)
-						{
-							list->Add(current->Key);
-						}
-					} while (enumerator->MoveNext());
-				}
-				List<String^>::Enumerator^ enumerator2 = list->GetEnumerator();
-				if (enumerator2->MoveNext())
-				{
-					do
-					{
-						String^ current2 = enumerator2->Current;
-						EmotePlayers->Remove(current2);
-					} while (enumerator2->MoveNext());
+					toBeDeleted->Add(pair.Key);
 				}
 			}
+			for each (auto str in toBeDeleted)
+			{
+				EmotePlayers->Remove(str);
+			}
 		}
+		delete player;
 	}
 	void Emote::DeletePlayer(String^ player)
 	{
 		Lock lock(EmotePlayers);
 		if (EmotePlayers->ContainsKey(player))
 		{
-			EmotePlayer^ emotePlayer = EmotePlayers[player];
+			EmotePlayer^ p = EmotePlayers[player];
 			EmotePlayers->Remove(player);
+			if (p != nullptr)
+			{
+				delete p;
+			}
 		}
 	}
 #pragma endregion Add/Remove Player
@@ -561,63 +561,43 @@ namespace EmoteEngineNet {
 	void Emote::Draw()
 	{
 		Lock lock(EmotePlayers);
-		Dictionary<String^, EmotePlayer^>::ValueCollection::Enumerator^ enumerator = EmotePlayers->Values->GetEnumerator();
-		if (enumerator->MoveNext())
+		for each (auto player in EmotePlayers->Values)
 		{
-			do
+			if (player != nullptr)
 			{
-				EmotePlayer^ current = enumerator->Current;
-				if (current != nullptr)
-				{
-					sEmoteDevice->OnRenderTarget(sCanvasTexture);
-					current->Render();
-				}
-			} while (enumerator->MoveNext());
+				sEmoteDevice->OnRenderTarget(sCanvasTexture);
+				player->Render();
+			}
 		}
 	}
 	void Emote::Show()
 	{
-		Dictionary<String^, EmotePlayer^>::ValueCollection::Enumerator^ enumerator = EmotePlayers->Values->GetEnumerator();
-		if (enumerator->MoveNext())
+		for each (auto player in EmotePlayers->Values)
 		{
-			do
+			if (player != nullptr)
 			{
-				EmotePlayer^ current = enumerator->Current;
-				if (current != nullptr)
-				{
-					current->Show();
-				}
-			} while (enumerator->MoveNext());
+				player->Show();
+			}
 		}
 	}
 	void Emote::Skip()
 	{
-		Dictionary<String^, EmotePlayer^>::ValueCollection::Enumerator^ enumerator = EmotePlayers->Values->GetEnumerator();
-		if (enumerator->MoveNext())
+		for each (auto player in EmotePlayers->Values)
 		{
-			do
+			if (player != nullptr)
 			{
-				EmotePlayer^ current = enumerator->Current;
-				if (current != nullptr)
-				{
-					current->Skip();
-				}
-			} while (enumerator->MoveNext());
+				player->Skip();
+			}
 		}
 	}
 	void Emote::Update(float frameCount)
 	{
-		Dictionary<String^, EmotePlayer^>::ValueCollection::Enumerator^ enumerator = EmotePlayers->Values->GetEnumerator();
-		if (enumerator->MoveNext())
+		for each (auto player in EmotePlayers->Values)
 		{
-			do
+			if (player != nullptr)
 			{
-				EmotePlayer^ current = enumerator->Current;
-				if (current != nullptr)
-				{
-					current->Progress((float)((double)frameCount * MSTOF60THS));
-				}
-			} while (enumerator->MoveNext());
+				player->Progress(frameCount * MSTOF60THS);
+			}
 		}
 	}
 #pragma endregion PlayerCollectionFunctions
@@ -626,19 +606,19 @@ namespace EmoteEngineNet {
 	void Emote::LoadEmoteEngine(String^ EnginePath, InterfaceVersion Version)
 	{
 		//if (EmoteCreate__TYPE == NULL)
-		if(driver == nullptr)
+		if (driver == nullptr)
 		{
 			//IntPtr EnginePathPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(EnginePath);
 			//ptrEmoteCreate__TYPE = LoadLibraryW((LPCWSTR)EnginePathPtr.ToPointer());
 			//EmoteCreate__TYPE = (EmoteFactoryFunction__TYPE)GetProcAddress(ptrEmoteCreate__TYPE, (LPCSTR)("?EmoteCreate@@YAPAVIEmoteDevice@@ABUInitParam@1@@Z"));
-			
+
 			//driver = gcnew EmoteDriverAdapater(ptrEmoteCreate__TYPE);
 
 			switch (Version)
 			{
-			case InterfaceVersion::v3_4 : driver = gcnew Adapter::EmoteDriver3_4  (EnginePath); break;
+			case InterfaceVersion::v3_4: driver = gcnew Adapter::EmoteDriver3_4(EnginePath); break;
 			case InterfaceVersion::NEKO1: driver = gcnew Adapter::EmoteDriverNEKO1(EnginePath); break;
-			case InterfaceVersion::v3_52: driver = gcnew Adapter::EmoteDriver3_52 (EnginePath); break;
+			case InterfaceVersion::v3_52: driver = gcnew Adapter::EmoteDriver3_52(EnginePath); break;
 			case InterfaceVersion::NEKO0: driver = gcnew Adapter::EmoteDriverNEKO0(EnginePath); break;
 			}
 		}

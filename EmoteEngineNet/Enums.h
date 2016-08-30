@@ -23,6 +23,7 @@ namespace EmoteEngineNet
 		SHADER_MODEL_3
 	};
 
+	[System::FlagsAttribute]
 	public enum class TimelinePlayFlags : uint32_t
 	{
 		NONE = 0u,

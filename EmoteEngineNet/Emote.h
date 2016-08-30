@@ -23,7 +23,7 @@ namespace EmoteEngineNet {
 	ref class EmotePlayer;
 	ref class EmoteDriverAdapater;
 
-	public ref class Emote
+	public ref class Emote : IDisposable
 	{
 
 #pragma region Construction/Destruction
@@ -34,9 +34,10 @@ namespace EmoteEngineNet {
 		Emote(IntPtr handle, int width, int height);
 		Emote(IntPtr handle, int width, int height, bool useD3DSurface);
 		Emote(IntPtr handle, int width, int height, bool useD3DSurface, bool setTransparent);
-
-	protected:
 		~Emote();
+
+	//protected:
+		
 #pragma endregion Construction/Destruction
 
 #pragma region DirectX
@@ -162,14 +163,20 @@ namespace EmoteEngineNet {
 	
 		bool transparent = false;
 
-	public:
+	internal:
 		//EmoteFactoryFunction_3_52 EmoteCreate_3_52;
 		//EmoteFactoryFunction_3_4 EmoteCreate_3_4;
 		//EmoteFactoryFunction_NEKO1 EmoteCreate_NEKO1;
 		//EmoteFactoryFunction_NEKO0 EmoteCreate_NEKO0;
 		//EmoteFactoryFunction__TYPE EmoteCreate__TYPE;
 
-		EmoteFilterTextureFunction EmoteFilterTexture;
+		property EmoteFilterTextureFunction EmoteFilterTexture
+		{
+			EmoteFilterTextureFunction get()
+			{
+				return driver->EmoteFilterTexture;
+			}
+		}
 
 	private:
 		Adapter::EmoteDriverBase^ driver;

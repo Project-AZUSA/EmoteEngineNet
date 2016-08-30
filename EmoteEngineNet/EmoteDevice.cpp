@@ -9,8 +9,7 @@ namespace EmoteEngineNet {
 	EmoteDevice::EmoteDevice(Adapter::EmoteDeviceBase^ sDevice, Emote^ _emote)
 	{
 		device = sDevice;
-		backing_store__UseTextureFilter = false;
-
+		UseTextureFilter = false;
 		emote = _emote;
 	}
 
@@ -34,9 +33,9 @@ namespace EmoteEngineNet {
 		DWORD bytesRead;
 		ReadFile(hFile, buf, fileSize, &bytesRead, NULL);
 		CloseHandle(hFile);
-		if (backing_store__UseTextureFilter && backing_store__TextureFilter != nullptr)
+		if (UseTextureFilter && TextureFilter != nullptr)
 		{
-			emote->EmoteFilterTexture(buf, fileSize, (FP_EMOTE_FILTER_FUNC)(Marshal::GetFunctionPointerForDelegate(backing_store__TextureFilter).ToPointer()));
+			emote->EmoteFilterTexture(buf, fileSize, (FP_EMOTE_FILTER_FUNC)((Marshal::GetFunctionPointerForDelegate(TextureFilter)).ToPointer()));
 		}
 		//IEmotePlayer__TYPE* player;
 		//device->CreatePlayer(buf, fileSize, &player);
@@ -54,10 +53,11 @@ namespace EmoteEngineNet {
 
 		CopyStreamToNativePtr(stream, buf);
 
-		if (backing_store__UseTextureFilter && backing_store__TextureFilter != nullptr)
-		{
-			emote->EmoteFilterTexture(buf, fileSize, (FP_EMOTE_FILTER_FUNC)(Marshal::GetFunctionPointerForDelegate(backing_store__TextureFilter).ToPointer()));
+		if (UseTextureFilter && TextureFilter != nullptr)
+		{			
+			emote->EmoteFilterTexture(buf, fileSize, (FP_EMOTE_FILTER_FUNC)((Marshal::GetFunctionPointerForDelegate(TextureFilter)).ToPointer()));
 		}
+
 		//IEmotePlayer__TYPE* player;
 		//device->CreatePlayer(buf, fileSize, &player);
 		Adapter::EmotePlayerBase^ player = device->CreatePlayer(buf, fileSize);
@@ -191,22 +191,4 @@ namespace EmoteEngineNet {
 	//	return device;
 	//}
 
-	TextureFilterFunction^ EmoteDevice::TextureFilter::get()
-	{
-		return backing_store__TextureFilter;
-	}
-
-	void EmoteDevice::TextureFilter::set(TextureFilterFunction^ value)
-	{
-		backing_store__TextureFilter = value;
-	}
-
-	bool EmoteDevice::UseTextureFilter::get() {
-		return backing_store__UseTextureFilter;
-	}
-
-	void EmoteDevice::UseTextureFilter::set(bool value)
-	{
-		backing_store__UseTextureFilter = value;
-	}
 }

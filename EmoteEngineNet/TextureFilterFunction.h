@@ -5,5 +5,6 @@ using namespace System::Runtime::InteropServices;
 
 namespace EmoteEngineNet
 {
-	delegate void TextureFilterFunction(Byte* A_0, uint32_t A_1);
+		[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+		public delegate void TextureFilterFunction(Byte[], unsigned long);
 }

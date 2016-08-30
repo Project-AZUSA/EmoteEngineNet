@@ -17,7 +17,7 @@ namespace EmoteEngineNet {
 	ref class EmotePlayer;
 	ref class Emote;
 
-	public ref class EmoteDevice
+	public ref class EmoteDevice : IDisposable
 	{
 
 	public:
@@ -63,19 +63,12 @@ namespace EmoteEngineNet {
 		//}
 
 	public:
-		property TextureFilterFunction^ TextureFilter {
-			TextureFilterFunction^ get();
-			void set(TextureFilterFunction^ value);
-		}
+		property TextureFilterFunction^ EmoteDevice::TextureFilter;
 
-		property bool UseTextureFilter {
-			bool get();
-			void set(bool value);
-		}
+
+		property bool UseTextureFilter;
 
 	private:
-		TextureFilterFunction^ backing_store__TextureFilter;
-		bool backing_store__UseTextureFilter;
 		//IEmoteDevice__TYPE* device = NULL;
 		Adapter::EmoteDeviceBase^ device = nullptr;
 

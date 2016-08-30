@@ -12,11 +12,11 @@ using namespace System::Security::Permissions;
 // associated with an assembly.
 //
 [assembly:AssemblyTitleAttribute(L"EmoteEngineNet")];
-[assembly:AssemblyDescriptionAttribute(L"")];
+[assembly:AssemblyDescriptionAttribute(L".NET wrapper for E-mote.")];
 [assembly:AssemblyConfigurationAttribute(L"")];
 [assembly:AssemblyCompanyAttribute(L"")];
 [assembly:AssemblyProductAttribute(L"EmoteEngineNet")];
-[assembly:AssemblyCopyrightAttribute(L"Copyright (c)  2016")];
+[assembly:AssemblyCopyrightAttribute(L"Copyright (c) Nielk1 & UlyssesWu 2016")];
 [assembly:AssemblyTrademarkAttribute(L"")];
 [assembly:AssemblyCultureAttribute(L"")];
 
@@ -31,7 +31,7 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("0.1.*")];
+[assembly:AssemblyVersionAttribute("0.9.*")];
 
 [assembly:ComVisible(false)];
 

@@ -13,10 +13,14 @@ using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
 using namespace msclr::interop;
 
+
+
 namespace EmoteEngineNet {
 	namespace Adapter {
 		ref class EmotePlayerNEKO1 : EmotePlayerBase
 		{
+			typedef class IEmoteDevice_NEKO1 IEmoteDevice;
+			typedef class IEmotePlayer_NEKO1 IEmotePlayer;
 		private:
 			marshal_context^ context;
 			const char* StringToCharPtr(String^ str)
@@ -28,7 +32,7 @@ namespace EmoteEngineNet {
 				return (char *)nulString;
 			}
 		internal:
-			EmotePlayerNEKO1(IEmotePlayer_NEKO1* player)
+			EmotePlayerNEKO1(IEmotePlayer* player)
 			{
 				context = gcnew marshal_context();
 				sPlayer = player;
@@ -40,7 +44,7 @@ namespace EmoteEngineNet {
 				sPlayer->Release();
 			}
 		private:
-			IEmotePlayer_NEKO1* sPlayer;
+			IEmotePlayer* sPlayer;
 		public:
 			void AddRef() override
 			{
@@ -62,6 +66,11 @@ namespace EmoteEngineNet {
 			EmotePlayerBase^ Clone() override
 			{
 				return gcnew EmotePlayerNEKO1(sPlayer->Clone());
+			}
+
+			int Contains(String^ label, float x, float y) override
+			{
+				return 0;
 			}
 
 			uint32_t CountDiffTimelines() override
@@ -364,8 +373,10 @@ namespace EmoteEngineNet {
 
 		ref class EmoteDeviceNEKO1 : EmoteDeviceBase
 		{
+			typedef class IEmoteDevice_NEKO1 IEmoteDevice;
+			typedef class IEmotePlayer_NEKO1 IEmotePlayer;
 		internal:
-			EmoteDeviceNEKO1(IEmoteDevice_NEKO1* _sEmoteDevice)
+			EmoteDeviceNEKO1(IEmoteDevice* _sEmoteDevice)
 			{
 				sEmoteDevice = _sEmoteDevice;
 			}
@@ -377,7 +388,7 @@ namespace EmoteEngineNet {
 				}
 			}
 		private:
-			IEmoteDevice_NEKO1* sEmoteDevice;
+			IEmoteDevice* sEmoteDevice;
 
 		public:
 			emote_uint32_t AddRef(void) override
@@ -395,7 +406,7 @@ namespace EmoteEngineNet {
 
 			void SetMaskMode(MaskMode maskMode) override
 			{
-				sEmoteDevice->SetMaskMode(static_cast<IEmoteDevice_NEKO1::mask_mode_t>(maskMode));
+				sEmoteDevice->SetMaskMode(static_cast<IEmoteDevice::mask_mode_t>(maskMode));
 			}
 			MaskMode GetMaskMode(void) override
 			{
@@ -414,14 +425,14 @@ namespace EmoteEngineNet {
 			//void CreatePlayer(emote_image_ptr_t emoteObjectImage, emote_uint32_t emoteObjectSize, class IEmotePlayer__TYPE **player)
 			EmotePlayerBase^ CreatePlayer(emote_image_ptr_t emoteObjectImage, emote_uint32_t emoteObjectSize) override
 			{
-				IEmotePlayer_NEKO1 *player;
+				IEmotePlayer *player;
 				sEmoteDevice->CreatePlayer(emoteObjectImage, emoteObjectSize, &player);
 				return gcnew EmotePlayerNEKO1(player);
 			}
 			//void CreatePlayer(emote_uint32_t emoteObjectNum, const emote_image_ptr_t *emoteObjectImage, const emote_uint32_t *emoteObjectSize, class IEmotePlayer__TYPE **player)
 			EmotePlayerBase^ CreatePlayer(emote_uint32_t emoteObjectNum, const emote_image_ptr_t *emoteObjectImage, const emote_uint32_t *emoteObjectSize) override
 			{
-				IEmotePlayer_NEKO1 *player;
+				IEmotePlayer *player;
 				sEmoteDevice->CreatePlayer(emoteObjectNum, (const emote_uint8_t**)emoteObjectImage, emoteObjectSize, &player);
 				return gcnew EmotePlayerNEKO1(player);
 			}
@@ -432,7 +443,7 @@ namespace EmoteEngineNet {
 			}
 			void SetShaderModel(ShaderModel model) override
 			{
-				sEmoteDevice->SetShaderModel(static_cast<IEmoteDevice_NEKO1::shader_model_t>(model));
+				sEmoteDevice->SetShaderModel(static_cast<IEmoteDevice::shader_model_t>(model));
 			}
 			ShaderModel GetShaderModel(void) override
 			{
@@ -450,7 +461,7 @@ namespace EmoteEngineNet {
 
 			void SetAlphaOp(AlphaOp alphaOp) override
 			{
-				sEmoteDevice->SetAlphaOp(static_cast<IEmoteDevice_NEKO1::alpha_op_t>(alphaOp));
+				sEmoteDevice->SetAlphaOp(static_cast<IEmoteDevice::alpha_op_t>(alphaOp));
 			}
 			AlphaOp GetAlphaOp(void) override
 			{
@@ -492,12 +503,15 @@ namespace EmoteEngineNet {
 
 		ref class EmoteDriverNEKO1 : EmoteDriverBase
 		{
+			typedef class IEmoteDevice_NEKO1 IEmoteDevice;
+			typedef class IEmotePlayer_NEKO1 IEmotePlayer;
 		internal:
 			EmoteDriverNEKO1(String^ EnginePath)
 			{
 				IntPtr EnginePathPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(EnginePath);
 				ptrEmoteCreate = LoadLibraryW((LPCWSTR)EnginePathPtr.ToPointer());
 				EmoteCreate_NEKO1 = (EmoteFactoryFunction_NEKO1)GetProcAddress(ptrEmoteCreate, (LPCSTR)("?EmoteCreate@@YAPAVIEmoteDevice@@ABUInitParam@1@@Z"));
+				EmoteFilterTexture = (EmoteFilterTextureFunction)GetProcAddress(ptrEmoteCreate, (LPCSTR)("?EmoteFilterTexture@@YAXPAEKP6AX0K@Z@Z")); 
 			}
 			~EmoteDriverNEKO1()
 			{
@@ -510,11 +524,11 @@ namespace EmoteEngineNet {
 		public:
 			EmoteDeviceBase^ EmoteCreate(IDirect3DDevice9* sD3DDevice) override
 			{
-				IEmoteDevice_NEKO1::InitParam initParam;
+				IEmoteDevice::InitParam initParam;
 				ZeroMemory(&initParam, sizeof(initParam));
 				initParam.d3dDevice = sD3DDevice;
 
-				IEmoteDevice_NEKO1* sEmoteDevice = EmoteCreate_NEKO1(initParam);
+				IEmoteDevice* sEmoteDevice = EmoteCreate_NEKO1(initParam);
 				return gcnew EmoteDeviceNEKO1(sEmoteDevice);
 			}
 		private:

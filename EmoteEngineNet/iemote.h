@@ -157,7 +157,7 @@ public:
 	virtual void StopWind(void) = 0;
 
 	//ADDED: only for nekopara version E-mote
-	virtual int UnknownFunc(int v1, float v2, float v3) const = 0;
+	virtual int Contains(const char *label, float x, float y) const = 0;
 
 	virtual emote_uint32_t CountMainTimelines(void) const = 0;
 	virtual const char *GetMainTimelineLabelAt(emote_uint32_t index) const = 0;

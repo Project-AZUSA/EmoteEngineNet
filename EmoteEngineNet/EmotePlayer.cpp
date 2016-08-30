@@ -56,6 +56,11 @@ namespace EmoteEngineNet {
 		return sPlayer->CountVariables();
 	}
 
+	int EmotePlayer::Contains(String^ label, float x, float y)
+	{
+		return sPlayer->Contains(label, x, y);
+	}
+
 	void EmotePlayer::FadeInTimeline(String^ label, float frameCount, float easing)
 	{
 		sPlayer->FadeInTimeline(label, frameCount, easing);

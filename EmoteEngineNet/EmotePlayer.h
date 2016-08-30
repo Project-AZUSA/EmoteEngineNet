@@ -18,7 +18,7 @@ namespace EmoteEngineNet {
 	//static const float F60THSTOMS = 1000.0f / 60.0f;
 
 
-	public ref class EmotePlayer
+	public ref class EmotePlayer : IDisposable
 	{
 	internal:
 		//EmotePlayer(IEmotePlayer__TYPE* player);
@@ -35,6 +35,7 @@ namespace EmoteEngineNet {
 		uint32_t CountPlayingTimelines();
 		uint32_t CountVariableFrameAt(uint32_t variableIndex);
 		uint32_t CountVariables();
+		int Contains(String^ label, float x, float y);
 		void FadeInTimeline(String^ label, float frameCount, float easing);
 		void FadeOutTimeline(String^ label, float frameCount, float easing);
 		float GetBustScale();
